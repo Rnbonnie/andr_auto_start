@@ -204,22 +204,48 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun playVideoInternally() {
-        val possiblePaths = arrayOf(
-            Environment.getExternalStorageDirectory().absolutePath + VIDEO_PATH,
-            Environment.getExternalStorageDirectory().absolutePath + "/Movies/auto.mp4",
-            Environment.getExternalStorageDirectory().absolutePath + "/Download/auto.mp4",
-            "/sdcard/autostart/auto.mp4",
-            "/storage/emulated/0/autostart/auto.mp4"
-        )
-
-        var videoFile: File? = null
-        for (path in possiblePaths) {
-            val file = File(path)
-            if (file.exists()) {
-                videoFile = file
-                break
+    private fun getRandomVideoFromDir(dirPath: String): File? {
+        val dir = File(dirPath)
+        if (dir.exists() && dir.isDirectory) {
+            val videoExtensions = listOf(".mp4", ".mkv", ".avi", ".webm", ".3gp")
+            val files = dir.listFiles()
+            if (files != null) {
+                val videoFiles = files.filter { file ->
+                    file.isFile && videoExtensions.any { ext -> file.name.lowercase().endsWith(ext) }
+                }
+                if (videoFiles.isNotEmpty()) {
+                    return videoFiles.random()
+                }
             }
+        }
+        return null
+    }
+
+    private fun playVideoInternally() {
+        var videoFile: File? = null
+
+        videoFile = getRandomVideoFromDir(Environment.getExternalStorageDirectory().absolutePath + "/autostart")
+
+        if (videoFile == null) {
+            val moviesFile = File(Environment.getExternalStorageDirectory().absolutePath + "/Movies/auto.mp4")
+            if (moviesFile.exists()) {
+                videoFile = moviesFile
+            }
+        }
+
+        if (videoFile == null) {
+            val downloadFile = File(Environment.getExternalStorageDirectory().absolutePath + "/Download/auto.mp4")
+            if (downloadFile.exists()) {
+                videoFile = downloadFile
+            }
+        }
+
+        if (videoFile == null) {
+            videoFile = getRandomVideoFromDir("/sdcard/autostart")
+        }
+
+        if (videoFile == null) {
+            videoFile = getRandomVideoFromDir("/storage/emulated/0/autostart")
         }
 
         if (videoFile != null) {
