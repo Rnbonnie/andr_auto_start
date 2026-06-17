@@ -21,6 +21,21 @@ android {
         }
     }
 
+    signingConfigs {
+        debug {
+            v1SigningEnabled true
+            v2SigningEnabled true
+            enableV3Signing false
+            enableV4Signing false
+        }
+        release {
+            v1SigningEnabled true
+            v2SigningEnabled true
+            enableV3Signing false
+            enableV4Signing false
+        }
+    }
+
     splits {
         abi {
             enable !project.hasProperty("backport")
@@ -45,6 +60,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
