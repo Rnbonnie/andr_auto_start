@@ -24,6 +24,17 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew assembleDebug assembleRelease
 
+    - name: Backup APKs
+      run: |
+        mkdir -p old_apks
+        cp app/build/outputs/apk/release/*.apk old_apks/ || true
+
+    - name: Build backport with Gradle
+      run: ./gradlew assembleRelease -Pbackport
+
+    - name: Restore APKs
+      run: cp old_apks/*.apk app/build/outputs/apk/release/ || true
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
