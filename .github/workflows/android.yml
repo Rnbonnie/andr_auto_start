@@ -22,13 +22,13 @@ jobs:
       run: chmod +x gradlew || true
 
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      run: ./gradlew assembleDebug assembleRelease
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
-        path: app/build/outputs/apk/debug/*.apk
+        name: apks
+        path: app/build/outputs/apk/**/*.apk
 
   release:
     needs: build
@@ -43,7 +43,7 @@ jobs:
     - name: Download APK
       uses: actions/download-artifact@v4
       with:
-        name: app-debug
+        name: apks
         # Скачиваем в определенную папку, чтобы экшен точно её нашёл
         path: ./downloaded-artifacts
 
@@ -55,7 +55,11 @@ jobs:
         name: "Автоматический релиз #${{ github.run_number }}"
         body: |
           Автоматический билд из ветки main.
-          Коммит: ${{ github.sha }}
+
+          Сообщение коммита:
+          ${{ github.event.head_commit.message }}
+
+          Хэш коммита: ${{ github.sha }}
         files: "./downloaded-artifacts/**/*.apk"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

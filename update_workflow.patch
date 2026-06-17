@@ -1,0 +1,43 @@
+--- .github/workflows/android.yml
++++ .github/workflows/android.yml
+@@ -23,10 +23,10 @@
+       run: ./gradlew assembleDebug
+
+     - name: Upload APK
+       uses: actions/upload-artifact@v4
+       with:
+-        name: app-debug
+-        path: app/build/outputs/apk/debug/*.apk
++        name: apks
++        path: app/build/outputs/apk/**/*.apk
+
+   release:
+     needs: build
+@@ -38,15 +38,16 @@
+     - uses: actions/checkout@v4
+
+     - name: Download APK
+       uses: actions/download-artifact@v4
+       with:
+-        name: app-debug
++        name: apks
+         # Скачиваем в определенную папку, чтобы экшен точно её нашёл
+         path: ./downloaded-artifacts
+
+     - name: Create Release
+       uses: softprops/action-gh-release@v2
+       with:
+         # Генерируем имя тега на лету (например, build-42)
+         tag_name: "build-${{ github.run_number }}"
+         name: "Автоматический релиз #${{ github.run_number }}"
+         body: |
+           Автоматический билд из ветки main.
+-          Коммит: ${{ github.sha }}
++
++          Сообщение коммита:
++          ${{ github.event.head_commit.message }}
++
++          Хэш коммита: ${{ github.sha }}
+         files: "./downloaded-artifacts/**/*.apk"
+       env:
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
