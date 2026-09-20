@@ -15,6 +15,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.TextView
@@ -45,6 +46,9 @@ class MainActivity : AppCompatActivity() {
     
     private val CHANNEL_ID = "autostart_status"
     private val NOTIFICATION_ID = 1
+
+    private var lastOkClickTime: Long = 0
+    private val DOUBLE_CLICK_TIMEOUT = 500L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -318,5 +322,29 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER) {
+            val clickTime = SystemClock.elapsedRealtime()
+            if (clickTime - lastOkClickTime < DOUBLE_CLICK_TIMEOUT) {
+                openSettings()
+                lastOkClickTime = 0
+                return true
+            }
+            lastOkClickTime = clickTime
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    private fun openSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_SETTINGS)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error opening settings", e)
+            Toast.makeText(this, "Could not open settings", Toast.LENGTH_SHORT).show()
+        }
     }
 }
